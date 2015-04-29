@@ -25,7 +25,7 @@ $('button#submit').click(function() {
 Or even directly in your DOM:
 
 ```html
-<a href="#" onmouseover="analytics.fireEvent('mouseover')" onmouseout="analytics.fireEvent('mouseout');">This is a link</a>
+<a href="#" onmouseover="analytics.fireEvent('mouseover')">This is a link</a>
 ```
 
 ## AMD Module
@@ -54,7 +54,7 @@ define(["jquery", "extern/analytics"], function($, analytics) {
 
 The `analytics` instance has the following functions:
 
-### setGlobal( `name`, `value` )
+#### setGlobal( `name`, `value` )
 
 Set a global property that will be included with every event. This is useful for specifying the user ID for example.
 
@@ -64,7 +64,7 @@ Example:
 analytics.setGlobal('userid', 'nv8172361');
 ```
 
-### fireEvent( `name`, `properties`, `replace` )
+#### fireEvent( `name`, `properties`, `replace` )
 
 Trigger an analytics event. The `name` argument is the name of the event and the `properties` object contains all the properties this event will have.
 
@@ -79,7 +79,7 @@ analytics.fireEvent('ui.click', {
 });
 ```
 
-### startTimer( `name` )
+#### startTimer( `name` )
 
 Start a named timer with the specified name.
 
@@ -89,7 +89,7 @@ Example:
 analytics.startTimer('ui.interaction');
 ```
 
-### stopTimer( `name` )
+#### stopTimer( `name` )
 
 Stop a named timer and return it's current value (in milliseconds), or `0` if the timer does not exist.
 
@@ -99,7 +99,7 @@ Example:
 var interation_time = analytics.stopTimer('ui.interaction');
 ```
 
-### restartTimer( `name` )
+#### restartTimer( `name` )
 
 Restart a named timer and return it's current value (in milliseconds), or `0` if the timer does not exist.
 
@@ -109,7 +109,7 @@ Example:
 var current_interaction = analytics.restartTimer('ui.interaction');
 ```
 
-### getTimer( `name` )
+#### getTimer( `name` )
 
 Return the current value (in milliseconds) of the specified named timer, or `0` if the timer does not exist.
 
