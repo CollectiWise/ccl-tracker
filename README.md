@@ -127,6 +127,8 @@ In order to receive analytics events, you will have to define the global propert
 
 There are two ways to receive events: Using a callback, or using window DOM events.
 
+**IMPORTANT:** If you do not define the `analyticsListener` property within 10 seconds after the page is fully loaded, the ccl-tracker library will automatically disable the entire analytics mechanism. 
+
 ### Using a Callback
 
 If you want to have just a single point where you receive all the analytics events, you should define a callback listener. To do so, just declare a global function named `analyticsListener`. Your function will be fired when an analytics event has to be submitted to the server.
