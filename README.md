@@ -118,3 +118,39 @@ Example:
 ```javascript
 var interaction_state = analytics.getTimer('ui.interaction');
 ```
+
+## Connecting to analytics back-end
+
+As we mentioned before, this library is just the middleware between the analytics back-end and a higher-level front-end. Without any analytics back-end this library is useless.
+
+In order to receive analytics events, you will have to define the global property `analyticsListener` at any time during or after the page loading.
+
+There are two ways to receive events: Using a callback, or using window DOM events.
+
+### Using a Callback
+
+If you want to have just a single point where you receive all the analytics events, you should define a callback listener. To do so, just declare a global function named `analyticsListener`. Your function will be fired when an analytics event has to be submitted to the server.
+
+For example:
+
+```javascript
+window.analyticsListener = function( eventName, eventData ) {
+    // Handle the event [eventName]
+    // The [eventData] object contain all the event properties
+    ...
+}
+```
+
+### Using DOM Events
+
+If you want to handle individual events, you can let the library forward each analytics action on the window DOM individually. To do so, set the global property `analyticsListener` to `true`. This will indicate the tracking library to fire a special event called `analytics.XXXXX`, where XXXXX is the event name.
+For example:
+
+```javascript
+window.analyticsListener = true;
+$(window).on('analytics.login', function(event, eventData) {
+    // Handle the event 'login'
+    // The [eventData] object contain all the event properties
+    ...
+});
+```
