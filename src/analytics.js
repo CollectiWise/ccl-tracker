@@ -7,6 +7,21 @@
 ( window.define == undefined ? function(fn) { window.analytics = fn(); } : window.define )(function() {
 
 	/**
+	 * Generate a tracking ID (An extension over GUID)
+	 */
+	function trackid() {
+	  function s4() {
+		return Math.floor((1 + Math.random()) * 0x10000)
+			.toString(16)
+			.substring(1);
+		}
+		var tid = "";
+		for (var i=0; i<8; i++) {
+			tid += s4();
+		}
+		return tid;
+	}
+	/**
 	 * Analytics are initialized only on demand
 	 */
 	var Analytics = function() {
@@ -24,6 +39,9 @@
 		// The analytics listener
 		this.listener = null;
 
+		// Tracking session ID
+		this.trackingID = null;
+
 		// Timers
 		this.timers = { };
 		this.timerAccummulators = { };
@@ -34,6 +52,52 @@
 		// Start probe timer
 		this.probeTimer = setInterval(this.probeListener.bind(this), 100);
 
+		// Initialize or resume a tracking session
+		this.trackingID = this.getCookie("_ccl_tracking_id")
+		if (!this.trackingID) {
+			// Generate a tracking ID
+			this.trackingID = trackid();
+			// Store it as cookie
+			this.createCookie("_ccl_tracking_id", this.trackingID, 365);
+		}
+
+		// Include trackid as a parameter
+		this.globals['trackid'] = this.trackingID;
+
+	}
+	
+	/**
+	 * Create a cookie on the browser cookie store
+	 */
+	Analytics.prototype.createCookie = function(name, value, days) {
+		var expires;
+		if (days) {
+			var date = new Date();
+			date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+			expires = "; expires=" + date.toGMTString();
+		}
+		else {
+			expires = "";
+		}
+		document.cookie = name + "=" + value + expires + "; path=/";
+	}
+
+	/**
+	 * Fetch a cookie from browser cookie store
+	 */
+	Analytics.prototype.getCookie = function(c_name) {
+		if (document.cookie.length > 0) {
+			c_start = document.cookie.indexOf(c_name + "=");
+			if (c_start != -1) {
+				c_start = c_start + c_name.length + 1;
+				c_end = document.cookie.indexOf(";", c_start);
+				if (c_end == -1) {
+					c_end = document.cookie.length;
+				}
+				return unescape(document.cookie.substring(c_start, c_end));
+			}
+		}
+		return "";
 	}
 
 	/**
