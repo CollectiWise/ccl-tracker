@@ -7,7 +7,7 @@
 ( window.define == undefined ? function(fn) { window.analytics = fn(); } : window.define )(function() {
 
 	/**
-	 * Generate a tracking ID (An extension over GUID)
+	 * Generate a tracking ID (An extension over GUID v4)
 	 */
 	function trackid() {
 	  function s4() {
@@ -21,6 +21,7 @@
 		}
 		return tid;
 	}
+	
 	/**
 	 * Analytics are initialized only on demand
 	 */
@@ -121,6 +122,7 @@
 			clearInterval(this.probeTimer);
 			this.expired = true;
 			this.stack = [];
+			console.warn("Analytics: No back-end registered on time")
 			return;
 		}
 
@@ -137,6 +139,7 @@
 		for (var i=0; i<this.stack.length; i++)
 			this.send(this.stack[i][0], this.stack[i][1]);
 		this.stack = [];
+		console.log("Analytics: Activated");
 
 	}
 
