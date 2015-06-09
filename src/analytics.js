@@ -39,6 +39,8 @@
 		this.timeoutTime = this.initializedAt + 10000;
 		// The analytics listener
 		this.listener = null;
+		// The debug flag
+		this.debug = false;
 
 		// Tracking session ID
 		this.trackingID = null;
@@ -135,11 +137,14 @@
 		this.listener = window.analyticsListener;
 		// We are now enabled
 		this.enabled = true;
+		// Log
+		if (this.debug)
+			console.log("Analytics: Registered back-end");
+
 		// Flush stack
 		for (var i=0; i<this.stack.length; i++)
 			this.send(this.stack[i][0], this.stack[i][1]);
 		this.stack = [];
-		console.log("Analytics: Activated");
 
 	}
 
@@ -151,23 +156,18 @@
 		// Check for listener
 		this.probeListener();
 
-		// If we are not enabled or expired, exit
-		if (!this.enabled || this.expired) return;
+		// If we are expired, exit
+		if (this.expired) return;
 
 		// Append globals
 		if (!data) data={};
 		for (k in this.globals)
 			data[k] = this.globals[k];
 
-		// Debug log
-		console.log("Analytics: ", eventName, data);
-
-		// If we are expired, exit
-		if (this.expired) return;
-
 		// Forward or stack it
 		if (this.enabled) {
 			this.send(eventName, data);
+			// Debug log
 		} else {
 			// If action is already on stack, change it's data
 			if (replace) {
@@ -180,6 +180,9 @@
 			}
 			// Otherwise, push on stack
 			this.stack.push([eventName, data]);
+			// Debug log
+			if (this.debug)
+				console.log("Analytics: Scheduling", eventName, data);
 		}
 
 	}
@@ -192,6 +195,10 @@
 		// Append timestamp if missing
 		if (data.ts == undefined)
 			data.ts = Date.now();
+
+		// Log seding actions
+		if (this.debug)
+			console.log("Analytics: Sending", eventName, data);
 
 		// Fire the event listener
 		if (this.listener) {
