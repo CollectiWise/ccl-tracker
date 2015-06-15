@@ -331,10 +331,10 @@
 	 */
 	Analytics_prototype.fireIncrementalEvent = function( eventName, data, config, value ) {
 		var cfg = {
-			'property'	: null,
-			'dataName'	: null,
-			'interval'	: 1,
-			'value'		: 1
+			'property'		: null,
+			'eventProperty'	: null,
+			'interval'		: 1,
+			'value'			: 1
 		};
 
 		// Set default data
@@ -343,10 +343,10 @@
 		// Handle string or object config
 		if (typeof(config) == 'string') {
 			cfg.property = config;
-			cfg.dataName = config;
+			cfg.eventProperty = config;
 		} else {
 			cfg.property = config['property'];
-			cfg.dataName = config['dataName'] || config['property'];
+			cfg.eventProperty = config['eventProperty'] || config['property'];
 			cfg.interval = config['interval'] || 1;
 			cfg.value 	 = config['value'] || 1;
 		}
@@ -373,7 +373,7 @@
 			// Fire last to current intervals
 			for (var v=lastValue+cfg.interval; v<=currValue; v+=cfg.interval) {
 				// Update event values
-				data[ cfg.dataName ] = v;
+				data[ cfg.eventProperty ] = v;
 				// Trigger event
 				this.fireEvent( eventName, data );
 			}
