@@ -8,7 +8,7 @@
 	"use strict";
 
 	/**
-	 * Keys to localstore
+	 * Keys to permanent storage
 	 */
 	var KEY_ACCUMULATORS = "_ccl_tracking_accumulators",
 		KEY_ACCUMDELTA 	 = "_ccl_tracking_delta",
@@ -50,6 +50,8 @@
 		this.listener = null;
 		// The debug flag
 		this.debug = false;
+		// Disable changed callbacks
+		this.disableChanged = false;
 
 		// Tracking session ID
 		this.trackingID = null;
@@ -65,16 +67,12 @@
 		this.probeTimer = setInterval(this.probeListener.bind(this), 100);
 
 		// Initialize or resume a tracking session
-		this.trackingID = this.getCookie( KEY_TRACKID );
-		if (!this.trackingID && localStorage)
-			this.trackingID = localStorage.getItem( KEY_TRACKID );
+		this.trackingID = this.getPermanent( KEY_TRACKID );
 		if (!this.trackingID) {
 			// Generate a tracking ID
 			this.trackingID = trackid();
 			// Store it as cookie & localStorage item
-			this.createCookie( KEY_TRACKID , this.trackingID, 365);
-			if (localStorage)
-				localStorage.setItem( KEY_TRACKID , this.trackingID);
+			this.setPermanent( KEY_TRACKID , this.trackingID, 365);
 		}
 
 		// Include trackid as a parameter
@@ -87,6 +85,60 @@
 	 */
 	var localStorage = window.localStorage,
 		Analytics_prototype = Analytics.prototype;
+
+	/**
+	 * Helper function to store a permenent property
+	 */
+	Analytics_prototype.setPermanent = function(name, value, expireTime) {
+		// Set local storage item
+		if (localStorage) {
+			localStorage.setItem( name, value );
+		} else {
+			this.createCookie(name, value, expireTime);
+		}
+		// Notify that the permanent store has changed
+		if (this.disableChanged) return;
+		if (window['$']) $(this).triggerHandler('changed', [ this.exportStore() ]);
+	}
+
+	/**
+	 * Helper function retrieve a permanent property
+	 */
+	Analytics_prototype.getPermanent = function(name) {
+		// Get local storage item
+		if (localStorage) {
+			return localStorage.getItem(name);
+		} else {
+			return this.getCookie( name );
+		}
+	}
+
+	/**
+	 * Helper function to delete a permenent property
+	 */
+	Analytics_prototype.deletePermanent = function(name) {
+		// Delete local storage item
+		if (localStorage) {
+			return localStorage.removeItem(name);
+		} else {
+			this.createCookie(name, "", -32);
+		}
+		// Notify that the permanent store has changed
+		if (this.disableChanged) return;
+		if (window['$']) $(this).triggerHandler('changed', [ this.pack() ]);
+	}
+
+	/**
+	 * Helper function to check if there is a permanent property
+	 */
+	Analytics_prototype.hasPermanent = function(name) {
+		// Get local storage item
+		if (localStorage) {
+			return localStorage.hasOwnProperty(name);
+		} else {
+			return (this.getCookie( name ) != "");
+		}
+	}
 
 	/**
 	 * Create a cookie on the browser cookie store
@@ -355,8 +407,8 @@
 
 		// Load incremental data
 		var incremental = {};
-		if (localStorage.hasOwnProperty(KEY_INCREMENTAL))
-			incremental = JSON.parse( localStorage.getItem(KEY_INCREMENTAL) );
+		if (this.hasPermanent(KEY_INCREMENTAL))
+			incremental = JSON.parse( this.getPermanent(KEY_INCREMENTAL) );
 
 		// Get last incremental value
 		if (!incremental[cfg.name])
@@ -379,7 +431,7 @@
 
 			// Update accumulator delta value
 			incremental[cfg.name] = currValue;
-			localStorage.setItem(KEY_INCREMENTAL, JSON.stringify(incremental));
+			this.setPermanent(KEY_INCREMENTAL, JSON.stringify(incremental));
 
 		}
 
@@ -392,15 +444,15 @@
 
 		// Load Accumulators
 		var accumulators = {};
-		if (localStorage.hasOwnProperty(KEY_ACCUMULATORS))
-			accumulators = JSON.parse( localStorage.getItem(KEY_ACCUMULATORS) );
+		if (this.hasPermanent(KEY_ACCUMULATORS))
+			accumulators = JSON.parse( this.getPermanent(KEY_ACCUMULATORS) );
 
 		// Delete
 		if (accummulators[name] !== undefined)
 			delete accummulators[name];
 
 		// Update item
-		localStorage.setItem(KEY_ACCUMULATORS, JSON.stringify(accumulators));
+		this.setPermanent(KEY_ACCUMULATORS, JSON.stringify(accumulators));
 
 	}
 
@@ -410,9 +462,9 @@
 	Analytics_prototype.clearAll = function() {
 
 		// Remove local storage items
-		localStorage.removeItem( KEY_ACCUMULATORS );
-		localStorage.removeItem( KEY_ACCUMDELTA );
-		localStorage.removeItem( KEY_INCREMENTAL );
+		localStorage.deletePermanent( KEY_ACCUMULATORS );
+		localStorage.deletePermanent( KEY_ACCUMDELTA );
+		localStorage.deletePermanent( KEY_INCREMENTAL );
 
 	}
 
@@ -426,8 +478,8 @@
 
 		// Load Accumulators
 		var accumulators = {};
-		if (localStorage.hasOwnProperty(KEY_ACCUMULATORS))
-			accumulators = JSON.parse( localStorage.getItem(KEY_ACCUMULATORS) );
+		if (this.hasPermanent(KEY_ACCUMULATORS))
+			accumulators = JSON.parse( this.getPermanent(KEY_ACCUMULATORS) );
 
 		// Update accumulator
 		if (!accumulators[name]) {
@@ -437,7 +489,7 @@
 		}
 
 		// Update item
-		localStorage.setItem(KEY_ACCUMULATORS, JSON.stringify(accumulators));
+		this.setPermanent(KEY_ACCUMULATORS, JSON.stringify(accumulators));
 
 		// Return value
 		return accumulators[name];
@@ -451,15 +503,15 @@
 
 		// Load Accumulators
 		var accumulators = {};
-		if (localStorage.hasOwnProperty(KEY_ACCUMDELTA))
-			accumulators = JSON.parse( localStorage.getItem(KEY_ACCUMDELTA) );
+		if (this.hasPermanent(KEY_ACCUMDELTA))
+			accumulators = JSON.parse( this.getPermanent(KEY_ACCUMDELTA) );
 
 		// Delete
 		if (accummulators[name] !== undefined)
 			delete accummulators[name];
 
 		// Update item
-		localStorage.setItem(KEY_ACCUMDELTA, JSON.stringify(accumulators));
+		this.setPermanent(KEY_ACCUMDELTA, JSON.stringify(accumulators));
 
 	}
 
@@ -474,8 +526,8 @@
 
 		// Get last deltas
 		var accumDelta = {};
-		if (localStorage.hasOwnProperty(KEY_ACCUMDELTA))
-			accumDelta = JSON.parse( localStorage.getItem(KEY_ACCUMDELTA) );
+		if (this.hasPermanent(KEY_ACCUMDELTA))
+			accumDelta = JSON.parse( this.getPermanent(KEY_ACCUMDELTA) );
 
 		// Get last accumulator delta value
 		if (!accumDelta[name])
@@ -486,12 +538,47 @@
 
 		// Update delta store
 		accumDelta[name] = value;
-		localStorage.setItem(KEY_ACCUMDELTA, JSON.stringify(accumDelta));
+		this.setPermanent(KEY_ACCUMDELTA, JSON.stringify(accumDelta));
 
 		// Update accumulator
 		return delta;
 
 	}
+
+	/* ############################################################ */
+	/*  Persistence API                                             */
+	/* ############################################################ */
+
+	/**
+	 * Pack all the current permanent information into a persistent string.
+	 */
+	Analytics_prototype.exportStore = function() {
+		return JSON.stringify({
+			'a': this.getPermanent(KEY_ACCUMULATORS),
+			'd': this.getPermanent(KEY_ACCUMDELTA),
+			'i': this.getPermanent(KEY_INCREMENTAL),
+			't': this.getPermanent(KEY_TRACKID)
+		});
+	}
+
+	/**
+	 * Unpack all the specified information and place them back to the
+	 * persistent storage.
+	 */
+	Analytics_prototype.importStore = function(data) {
+		var data = JSON.parse(data);
+		this.disableChanged = true;
+		if (data['a']) this.setPermanent(KEY_ACCUMULATORS, data['a']);
+		if (data['d']) this.setPermanent(KEY_ACCUMDELTA, data['d']);
+		if (data['i']) this.setPermanent(KEY_INCREMENTAL, data['i']);
+		if (data['t']) this.setPermanent(KEY_TRACKID, data['t']);
+		this.disableChanged = false;
+	}
+
+	/* ############################################################ */
+	/*  Initialization API                                          */
+	/* ############################################################ */
+
 
 	// Create and return an analytics instance
 	var analytics = new Analytics();

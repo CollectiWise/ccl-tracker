@@ -247,3 +247,29 @@ var new_jobs = analytics.delta('vm.jobs', get_job_count());
 #### clearDelta( `name` )
 
 Remove last delta value for the item with the specified name.
+
+## 5. Permanent Storage
+
+In some cases there is a need for keeping permanent tracking data for a particular session. Such cases are the ones the tracking is implemented across different browsers, windows or sessions.
+
+For such cases, the browser channel might not suffice, and therefore ccl-tracker provides an API to notify an external channel for such cases.
+
+When the permanent store has changed, the jquery event `changed` is triggered to the analytics instance. The first argument is the compacted store data that needs to be transported. The other end might import them at any time using the `importStore` function.
+
+For example:
+
+```javascript
+$(window.analytics).on('changed', function(e, storeStr) {
+    // Send the 'storeStr' string
+    transport.send(storeStr);
+});
+```
+
+On the other end, just import it:
+
+```javascript
+$(transport).on('event', function(e, data) {
+    // Import store
+    analytics.importStore( data );
+});
+```
