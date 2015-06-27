@@ -123,16 +123,16 @@ analytics.fireEvent('ui.click', {
 
 #### fireIncrementalEvent( `name`, `properties`, `property`, [ `value` ] )
 
-Trigger an analytics event every time `property` reaches a particular interval. The `name` argument is the name of the event and the `properties` object contains all the properties this event will have.
+Trigger an analytics event every time the value reaches a particular interval. The `name` argument is the name of the event and the `properties` object contains all the static properties this event will have.
 
 The `property` argument can be either a string or an object. In the first case it's considered to be the name of the property to monitor, assuming the interval is `1`, while on the second (recommended) has the following syntax:
 
 ```javascript
 {
-    "property"      : "..", // The property to monitor
-    "eventProperty" : "..", // The event property to store the result
-    "interval"      : 1,    // The interval to which the event should be fired
-    "value"         : 0     // The current value of the property
+    "property"  : "..", // The name of the event property to store the result
+    "value"     : 0,    // The current value of the property
+    "name"      : "..", // The name to use internally to index the value
+    "interval"  : 1,    // The interval to which the event should be fired
 }
 ```
 

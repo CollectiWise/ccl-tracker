@@ -331,8 +331,8 @@
 	 */
 	Analytics_prototype.fireIncrementalEvent = function( eventName, data, config, value ) {
 		var cfg = {
+			'name'			: eventName,
 			'property'		: null,
-			'eventProperty'	: null,
 			'interval'		: 1,
 			'value'			: 1
 		};
@@ -343,10 +343,9 @@
 		// Handle string or object config
 		if (typeof(config) == 'string') {
 			cfg.property = config;
-			cfg.eventProperty = config;
 		} else {
 			cfg.property = config['property'];
-			cfg.eventProperty = config['eventProperty'] || config['property'];
+			cfg.name = config['name'] || eventName;
 			cfg.interval = config['interval'] || 1;
 			cfg.value 	 = config['value'] || 1;
 		}
@@ -360,9 +359,9 @@
 			incremental = JSON.parse( localStorage.getItem(KEY_INCREMENTAL) );
 
 		// Get last incremental value
-		if (!incremental[cfg.property])
-			incremental[cfg.property] = 0;
-		var lastValue = incremental[cfg.property];
+		if (!incremental[cfg.name])
+			incremental[cfg.name] = 0;
+		var lastValue = incremental[cfg.name];
 
 		// Calculte current incremental value
 		var currValue = Math.floor( cfg.value / cfg.interval ) * cfg.interval;
@@ -373,13 +372,13 @@
 			// Fire last to current intervals
 			for (var v=lastValue+cfg.interval; v<=currValue; v+=cfg.interval) {
 				// Update event values
-				data[ cfg.eventProperty ] = v;
+				data[ cfg.property ] = v;
 				// Trigger event
 				this.fireEvent( eventName, data );
 			}
 
 			// Update accumulator delta value
-			incremental[cfg.property] = currValue;
+			incremental[cfg.name] = currValue;
 			localStorage.setItem(KEY_INCREMENTAL, JSON.stringify(incremental));
 
 		}
