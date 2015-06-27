@@ -553,12 +553,12 @@
 	 * Pack all the current permanent information into a persistent string.
 	 */
 	Analytics_prototype.exportStore = function() {
-		return JSON.stringify({
+		return btoa(JSON.stringify({
 			'a': this.getPermanent(KEY_ACCUMULATORS),
 			'd': this.getPermanent(KEY_ACCUMDELTA),
 			'i': this.getPermanent(KEY_INCREMENTAL),
 			't': this.getPermanent(KEY_TRACKID)
-		});
+		}));
 	}
 
 	/**
@@ -566,7 +566,7 @@
 	 * persistent storage.
 	 */
 	Analytics_prototype.importStore = function(data) {
-		var data = JSON.parse(data);
+		var data = JSON.parse( atob(data) );
 		this.disableChanged = true;
 		if (data['a']) this.setPermanent(KEY_ACCUMULATORS, data['a']);
 		if (data['d']) this.setPermanent(KEY_ACCUMDELTA, data['d']);
