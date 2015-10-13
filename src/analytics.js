@@ -40,6 +40,9 @@
 	 */
 	var Analytics = function() {
 
+		// Version information
+		this.version = "1.1";
+
 		// Prepare analytics stack
 		this.stack = [];
 		// Start by disabled
@@ -389,8 +392,8 @@
 		var cfg = {
 			'name'			: eventName,
 			'property'		: null,
-			'interval'		: 1,
-			'value'			: 1
+			'interval'		: [1],
+			'value'			: 1,
 		};
 
 		// Set default data
@@ -402,11 +405,14 @@
 		} else {
 			cfg.property = config['property'];
 			cfg.name = config['name'] || eventName;
-			cfg.interval = config['interval'] || 1;
+			cfg.interval = config['interval'] || [1];
 			cfg.value 	 = config['value'] || 1;
 		}
 		if (value !== undefined) {
 			cfg.value = value;
+		}
+		if (typeof(cfg.interval) != 'array') {
+			cfg.interval = [cfg.interval];
 		}
 
 		// Load incremental data
@@ -419,22 +425,50 @@
 			incremental[cfg.name] = 0;
 		var lastValue = incremental[cfg.name];
 
-		// Calculte current incremental value
-		var currValue = Math.floor( cfg.value / cfg.interval ) * cfg.interval;
-
 		// Continue only if new value is bigger
-		if (currValue > lastValue) {
+		if (cfg.value > lastValue) {
 
-			// Fire last to current intervals
-			for (var v=lastValue+cfg.interval; v<=currValue; v+=cfg.interval) {
-				// Update event values
-				data[ cfg.property ] = v;
-				// Trigger event
+			// Pick the initial interval
+			var intervalIndex = 0;
+				interval = cfg.interval[0];
+			for (var i=0; i<cfg.interval.length; i++) {
+				if (lastValue >= cfg.interval[i]) { // TODO: Verify '='
+					interval = cfg.interval[i];
+					intervalIndex = i;
+				} else {
+					break;
+				}
+			}
+
+			// Wrap target value on the specified interval
+			var targetValue = Math.floor( cfg.value / interval ) * interval;
+
+			// Start firing sequence until we reach current value
+			while (lastValue < targetValue) {
+
+				// Go to next value
+				lastValue += interval;
+
+				// Fire the event
+				data[ cfg.property ] = lastValue;
 				this.fireEvent( eventName, data );
+
+				// Check if we entered new granularity zone
+				if ((lastValue >= cfg.interval[intervalIndex]) && (intervalIndex<cfg.interval-1)) {
+
+					// Pick next interval
+					intervalIndex++;
+					interval = cfg.interval[intervalIndex];
+
+					// Update target value
+					targetValue = Math.floor( cfg.value / interval ) * interval;
+
+				}
+
 			}
 
 			// Update accumulator delta value
-			incremental[cfg.name] = currValue;
+			incremental[cfg.name] = lastValue;
 			this.setPermanent(KEY_INCREMENTAL, JSON.stringify(incremental));
 
 		}
