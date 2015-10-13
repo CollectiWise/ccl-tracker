@@ -4,7 +4,11 @@
 /**
  * Pick an initiator function according to AMD or stand-alone loading
  */
-( window.define == undefined ? function(fn) { window.analytics = fn(); } : window.define )(function() {
+(function (name, definition) {
+    if (typeof module != 'undefined') module.exports = definition()
+    else if (typeof define == 'function' && define.amd) define(name, definition)
+    else window.analytics = definition()
+})("ccl-tracker", function() {
 	"use strict";
 
 	/**
