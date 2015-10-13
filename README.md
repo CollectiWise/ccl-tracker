@@ -154,14 +154,14 @@ analytics.fireIncrementalEvent('engagement.minutes', {
 
 The above example will fire the event `engagement.minutes` every time the `ui-login` timer reaches a round multiplicand of 60. For every event, the property `time` will be sent included in the event, containing the current value of the timer. 
 
-##### Variable Interval
+##### Varying Interval
 
-Starting from version `1.1`, ccl-tracker supports variable interval as `fireIncrementalEvent` parameters. You can specify the intervals by passing an array in the `interval` property:
+Starting from _version 0.2_, ccl-tracker supports variable interval as `fireIncrementalEvent` parameters. You can specify the intervals by passing an array in the `interval` property:
 
 ```javascript
 {
     ...
-    "interval"  : [1,10,100],   // Variable intervals
+    "interval"  : [1,10,100],   // Varying intervals
     ...
 }
 ```

@@ -1,5 +1,5 @@
 
-/*! CCL-Tracker v0.1 | Ioannis Charalampidis, Citizen Cyberlab EU Project | GNU GPL v2.0 License */
+/*! CCL-Tracker v0.2 | Ioannis Charalampidis, Citizen Cyberlab EU Project | GNU GPL v2.0 License */
 
 /**
  * Pick an initiator function according to AMD or stand-alone loading
@@ -41,7 +41,7 @@
 	var Analytics = function() {
 
 		// Version information
-		this.version = "1.1";
+		this.version = "0.2";
 
 		// Prepare analytics stack
 		this.stack = [];
@@ -403,7 +403,7 @@
 		if (typeof(config) == 'string') {
 			cfg.property = config;
 		} else {
-			cfg.property = config['property'];
+			cfg.property = config['property'] || "value";
 			cfg.name = config['name'] || eventName;
 			cfg.interval = config['interval'] || [1];
 			cfg.value 	 = config['value'] || 1;
@@ -411,7 +411,7 @@
 		if (value !== undefined) {
 			cfg.value = value;
 		}
-		if (typeof(cfg.interval) != 'array') {
+		if (typeof(cfg.interval) != 'object') {
 			cfg.interval = [cfg.interval];
 		}
 
@@ -429,7 +429,7 @@
 		if (cfg.value > lastValue) {
 
 			// Pick the initial interval
-			var intervalIndex = 0;
+			var intervalIndex = 0,
 				interval = cfg.interval[0];
 			for (var i=0; i<cfg.interval.length; i++) {
 				if (lastValue >= cfg.interval[i]) { // TODO: Verify '='
@@ -454,7 +454,7 @@
 				this.fireEvent( eventName, data );
 
 				// Check if we entered new granularity zone
-				if ((lastValue >= cfg.interval[intervalIndex]) && (intervalIndex<cfg.interval-1)) {
+				if ((lastValue >= cfg.interval[intervalIndex+1]) && (intervalIndex<cfg.interval.length-1)) {
 
 					// Pick next interval
 					intervalIndex++;
